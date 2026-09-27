@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wavecall Admin — Platform Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF0F2; --surface:#FFFFFF; --surface-raised:#FFFFFF; --border:#DBDFE4;
+    --ink:#14181F; --ink-muted:#5B636F; --ink-faint:#8B93A1;
+    --inbound:#0E7C86; --inbound-soft:#DFF1F2;
+    --outbound:#B8791E; --outbound-soft:#F5EAD6;
+    --live:#E23F3F; --success:#2E8B57; --success-soft:#E3F2E9;
+    --warning:#C68A1E; --warning-soft:#F6EDD9;
+    --danger:#C94A3D; --danger-soft:#F8E5E2;
+    --admin:#5B4CC4; --admin-soft:#EBE8FA;
+    --shadow:0 1px 2px rgba(20,24,31,0.04); --overlay:rgba(15,18,23,0.4);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#10141A; --surface:#171C24; --surface-raised:#1E242E; --border:#2A313D;
+      --ink:#E7EAEE; --ink-muted:#9AA2B1; --ink-faint:#6B7280;
+      --inbound:#2FB8C4; --inbound-soft:#183339;
+      --outbound:#E3A23A; --outbound-soft:#3A2E17;
+      --live:#FF5C4D; --success:#3FBE7A; --success-soft:#173627;
+      --warning:#E3A23A; --warning-soft:#3A2E17;
+      --danger:#E35D52; --danger-soft:#3A1F1C;
+      --admin:#8A7AF0; --admin-soft:#241F42;
+      --shadow:0 1px 2px rgba(0,0,0,0.3); --overlay:rgba(0,0,0,0.55);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#10141A; --surface:#171C24; --surface-raised:#1E242E; --border:#2A313D;
+    --ink:#E7EAEE; --ink-muted:#9AA2B1; --ink-faint:#6B7280;
+    --inbound:#2FB8C4; --inbound-soft:#183339;
+    --outbound:#E3A23A; --outbound-soft:#3A2E17;
+    --live:#FF5C4D; --success:#3FBE7A; --success-soft:#173627;
+    --warning:#E3A23A; --warning-soft:#3A2E17;
+    --danger:#E35D52; --danger-soft:#3A1F1C;
+    --admin:#8A7AF0; --admin-soft:#241F42;
+    --shadow:0 1px 2px rgba(0,0,0,0.3); --overlay:rgba(0,0,0,0.55);
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box;}
+  html{ scroll-padding-top: env(safe-area-inset-top,0px); }
+  html,body{ height:100%; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:'Manrope',ui-sans-serif,system-ui,sans-serif;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); -webkit-font-smoothing:antialiased; }
+  h1,h2,h3,.num{ font-family:'Space Grotesk',ui-sans-serif,system-ui,sans-serif; }
+  .num{ font-variant-numeric:tabular-nums; }
+  button,input,select{ font-family:inherit; }
+  :focus-visible{ outline:2px solid var(--admin); outline-offset:2px; }
+
+  .shell{ display:grid; grid-template-columns:240px 1fr; grid-template-rows:64px 1fr;
+    grid-template-areas:"sidebar topbar" "sidebar main"; min-height:100%; }
+
+  .topbar{ grid-area:topbar; padding-top:env(safe-area-inset-top,0px); display:flex; align-items:center; gap:16px;
+    padding-left:28px; padding-right:28px; border-bottom:1px solid var(--border); background:var(--surface); }
+  .topbar h1{ font-size:17px; font-weight:600; margin:0; }
+  .topbar-spacer{ flex:1; }
+  .icon-btn{ width:34px; height:34px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--ink-muted); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+  .icon-btn:hover{ background:var(--bg); color:var(--ink); }
+  .range-select{ font-size:13px; font-weight:600; color:var(--ink-muted); background:var(--bg); border:1px solid var(--border); border-radius:7px; padding:6px 10px; }
+  .avatar{ width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--admin),var(--outbound)); display:flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:700; color:#fff; flex-shrink:0; }
+
+  .sidebar{ grid-area:sidebar; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:18px 14px; padding-bottom:calc(18px + env(safe-area-inset-bottom,0px)); }
+  .brand{ display:flex; align-items:center; gap:10px; padding:4px 8px 6px; }
+  .brand-mark{ width:30px; height:30px; border-radius:8px; background:var(--ink); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .brand-mark svg{ width:16px; height:16px; }
+  .brand-name{ font-size:16px; font-weight:700; letter-spacing:-0.01em; }
+  .admin-tag{ display:inline-block; font-size:10.5px; font-weight:700; color:var(--admin); background:var(--admin-soft); padding:2px 8px; border-radius:999px; margin:0 8px 18px; letter-spacing:0.02em; }
+  nav.navlist{ display:flex; flex-direction:column; gap:2px; }
+  .navitem{ display:flex; align-items:center; gap:11px; padding:9px 10px; border-radius:8px; font-size:14px; font-weight:600; color:var(--ink-muted); cursor:pointer; border:none; background:transparent; text-align:left; width:100%; }
+  .navitem svg{ width:17px; height:17px; flex-shrink:0; opacity:0.85; }
+  .navitem:hover{ background:var(--bg); color:var(--ink); }
+  .navitem.active{ background:var(--admin-soft); color:var(--admin); }
+  .navitem.active svg{ opacity:1; }
+  .navitem .badge{ margin-left:auto; background:var(--danger); color:#fff; font-size:10.5px; font-weight:700; padding:1px 6px; border-radius:999px; }
+  .nav-divider{ height:1px; background:var(--border); margin:14px 6px; }
+  .sidebar-footer{ margin-top:auto; display:flex; align-items:center; gap:10px; padding:10px 8px; border-top:1px solid var(--border); padding-top:16px; }
+  .sidebar-footer .who{ font-size:13px; }
+  .sidebar-footer .who .name{ font-weight:700; }
+  .sidebar-footer .who .org{ color:var(--ink-faint); font-size:12px; }
+
+  main.content{ grid-area:main; padding:26px 28px 40px; overflow-x:hidden; overflow-y:auto; }
+  .page{ display:none; }
+  .page.active{ display:block; }
+  .page-heading{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+  .page-heading h2{ font-size:22px; font-weight:600; margin:0; }
+  .page-heading p{ margin:2px 0 0; color:var(--ink-muted); font-size:14px; }
+
+  .kpi-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px; }
+  .kpi{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px; }
+  .kpi .label{ font-size:13px; color:var(--ink-muted); font-weight:600; margin-bottom:8px; }
+  .kpi .value{ font-size:24px; font-weight:700; letter-spacing:-0.01em; }
+  .kpi .sub{ font-size:12.5px; color:var(--ink-faint); margin-top:4px; font-weight:500; }
+  .kpi .sub.up{ color:var(--success); } .kpi .sub.down{ color:var(--danger); }
+
+  .grid-2{ display:grid; grid-template-columns:1fr 300px; gap:16px; align-items:start; }
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .panel{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 20px 20px; }
+  .panel h3{ font-size:15.5px; font-weight:600; margin:0 0 2px; }
+  .panel .panel-sub{ font-size:12.5px; color:var(--ink-muted); margin:0 0 16px; }
+  .legend{ display:flex; gap:16px; margin-bottom:14px; }
+  .legend-item{ display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-muted); font-weight:600; }
+  .legend-dot{ width:8px; height:8px; border-radius:50%; }
+  .chart{ display:flex; align-items:flex-end; gap:8px; height:150px; padding-top:6px; }
+  .chart-col{ flex:1; display:flex; flex-direction:column-reverse; align-items:center; gap:2px; height:100%; }
+  .chart-col .seg{ width:100%; max-width:26px; border-radius:3px 3px 0 0; }
+  .chart-labels{ display:flex; gap:8px; margin-top:8px; }
+  .chart-labels span{ flex:1; text-align:center; font-size:11px; color:var(--ink-faint); font-weight:600; }
+
+  .table-scroll{ overflow-x:auto; }
+  .dtable{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  .dtable th{ text-align:left; font-weight:600; color:var(--ink-muted); font-size:12.5px; padding:0 10px 10px 0; border-bottom:1px solid var(--border); white-space:nowrap; }
+  .dtable td{ padding:11px 10px 11px 0; border-bottom:1px solid var(--border); vertical-align:middle; }
+  .dtable tbody tr{ cursor:pointer; }
+  .dtable tbody tr:hover td{ background:var(--bg); }
+  .dtable tr:last-child td{ border-bottom:none; }
+  .cell-name{ font-weight:700; }
+  .cell-sub{ display:block; color:var(--ink-faint); font-size:12px; font-weight:500; }
+
+  .pill{ display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; padding:3px 9px; border-radius:999px; white-space:nowrap; }
+  .pill.good{ background:var(--success-soft); color:var(--success); }
+  .pill.warn{ background:var(--warning-soft); color:var(--warning); }
+  .pill.crit{ background:var(--danger-soft); color:var(--danger); }
+  .pill.neutral{ background:var(--border); color:var(--ink-muted); }
+  .pill .dot{ width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+  .usage-track{ width:100px; height:6px; border-radius:999px; background:var(--bg); overflow:hidden; display:inline-block; vertical-align:middle; margin-right:8px; }
+  .usage-fill{ height:100%; border-radius:999px; }
+
+  .alert{ display:flex; gap:10px; padding:11px 0; border-bottom:1px solid var(--border); }
+  .alert:last-child{ border-bottom:none; padding-bottom:0; }
+  .alert-bar{ width:3px; border-radius:2px; flex-shrink:0; }
+  .alert.warn .alert-bar{ background:var(--warning); }
+  .alert.crit .alert-bar{ background:var(--danger); }
+  .alert.info .alert-bar{ background:var(--admin); }
+  .alert-text{ font-size:13px; line-height:1.4; }
+  .alert-text .t{ font-weight:700; display:block; margin-bottom:1px; }
+  .alert-text .d{ color:var(--ink-muted); font-size:12px; }
+
+  .toolbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
+  .search-input{ flex:1; min-width:220px; padding:9px 13px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--ink); font-size:13.5px; }
+  .chip-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .chip{ padding:6px 13px; border-radius:999px; border:1px solid var(--border); background:var(--surface); color:var(--ink-muted); font-size:12.5px; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .chip.active{ background:var(--admin-soft); color:var(--admin); border-color:transparent; }
+
+  .vendor-card{ border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin-bottom:12px; display:flex; align-items:center; gap:16px; }
+  .vendor-dot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .vendor-dot.good{ background:var(--success); } .vendor-dot.warn{ background:var(--warning); } .vendor-dot.crit{ background:var(--danger); }
+  .vendor-name{ font-weight:700; font-size:14px; }
+  .vendor-meta{ font-size:12px; color:var(--ink-muted); }
+  .vendor-stats{ margin-left:auto; display:flex; gap:22px; }
+  .vendor-stats .vs{ text-align:right; }
+  .vendor-stats .vs b{ display:block; font-family:'Space Grotesk'; font-size:15px; font-weight:700; }
+  .vendor-stats .vs span{ font-size:11px; color:var(--ink-faint); }
+
+  .cost-row{ display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); font-size:13.5px; }
+  .cost-row:last-child{ border-bottom:none; }
+  .cost-row .cr-dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+  .cost-row .cr-name{ font-weight:700; flex:1; }
+  .cost-row .cr-val{ font-weight:700; font-variant-numeric:tabular-nums; }
+  .cost-row .cr-pct{ width:50px; text-align:right; color:var(--ink-muted); font-size:12px; }
+
+  .plan-row{ display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid var(--border); }
+  .plan-row:last-child{ border-bottom:none; }
+  .plan-name{ font-weight:700; font-size:14px; width:110px; flex-shrink:0; }
+  .plan-detail{ font-size:12.5px; color:var(--ink-muted); flex:1; }
+  .plan-price{ font-weight:700; font-family:'Space Grotesk'; font-size:15px; }
+
+  .team-row{ display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); font-size:13.5px; }
+  .team-row:last-child{ border-bottom:none; }
+  .team-row .tr-name{ font-weight:700; }
+  .team-row .tr-email{ color:var(--ink-faint); font-size:12px; display:block; }
+  .team-row .tr-role{ margin-left:auto; font-size:12px; font-weight:700; color:var(--ink-muted); background:var(--bg); padding:3px 10px; border-radius:999px; }
+
+  .btn{ border:1px solid var(--border); background:var(--surface); color:var(--ink); border-radius:8px; padding:8px 14px; font-size:13px; font-weight:700; cursor:pointer; }
+  .btn:hover{ background:var(--bg); }
+  .btn.primary{ background:var(--admin); color:#fff; border-color:var(--admin); }
+
+  .drawer-overlay{ position:fixed; inset:0; background:var(--overlay); display:none; z-index:40; }
+  .drawer-overlay.open{ display:block; }
+  .drawer{ position:fixed; top:0; right:-440px; width:420px; max-width:92vw; height:100%; background:var(--surface); border-left:1px solid var(--border); z-index:41; transition:right .2s ease; padding:22px; overflow-y:auto; padding-top:calc(22px + env(safe-area-inset-top,0px)); padding-bottom:calc(22px + env(safe-area-inset-bottom,0px)); }
+  .drawer.open{ right:0; }
+  .drawer-close{ position:absolute; top:18px; right:18px; background:none; border:none; cursor:pointer; color:var(--ink-muted); }
+  .drawer h3{ font-size:18px; margin:0 0 2px; padding-right:30px; }
+  .drawer .drawer-sub{ color:var(--ink-muted); font-size:13px; margin:0 0 18px; }
+  .drawer-meta{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+  .drawer-meta .m-label{ font-size:11.5px; color:var(--ink-faint); font-weight:600; margin-bottom:3px; }
+  .drawer-meta .m-value{ font-size:13.5px; font-weight:700; }
+
+  /* ---------- Form fields ---------- */
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-size:13px; font-weight:700; margin-bottom:6px; }
+  .field .hint{ font-size:12px; color:var(--ink-faint); margin-top:5px; line-height:1.4; }
+  input[type=text], input[type=email], input[type=tel], select, textarea{ width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--ink); font-size:13.5px; }
+  textarea{ resize:vertical; min-height:70px; line-height:1.5; }
+  .two-col-form{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+
+  .switch{ position:relative; width:38px; height:22px; flex-shrink:0; display:inline-block; }
+  .switch input{ opacity:0; width:0; height:0; position:absolute; }
+  .switch .track{ position:absolute; inset:0; background:var(--border); border-radius:999px; transition:.15s; cursor:pointer; }
+  .switch .track::before{ content:""; position:absolute; width:16px; height:16px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.15s; }
+  .switch input:checked + .track{ background:var(--admin); }
+  .switch input:checked + .track::before{ transform:translateX(16px); }
+
+  .hours-grid{ display:grid; grid-template-columns:90px 1fr; gap:10px 14px; align-items:center; }
+  .day-name{ font-size:13px; font-weight:700; }
+  .day-time{ display:flex; gap:8px; align-items:center; font-size:13px; color:var(--ink-muted); flex-wrap:wrap; }
+  .day-time select{ width:auto; padding:6px 10px; }
+
+  .kb-row{ display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--border); }
+  .kb-row:last-child{ border-bottom:none; }
+  .kb-icon{ width:34px; height:34px; border-radius:8px; background:var(--bg); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--ink-muted); }
+  .kb-name{ font-weight:700; font-size:13.5px; }
+  .kb-meta{ font-size:12px; color:var(--ink-faint); }
+  .kb-row .btn{ margin-left:auto; padding:6px 12px; font-size:12.5px; }
+  .kb-drop{ border:1.5px dashed var(--border); border-radius:10px; padding:20px; text-align:center; color:var(--ink-muted); font-size:13px; margin-top:12px; }
+
+  .transcript{ display:flex; flex-direction:column; gap:10px; max-height:320px; overflow-y:auto; padding-right:4px; margin-bottom:14px; }
+  .bubble{ max-width:80%; padding:9px 13px; border-radius:13px; font-size:13.5px; line-height:1.45; }
+  .bubble.agent{ align-self:flex-start; background:var(--bg); border:1px solid var(--border); border-bottom-left-radius:4px; }
+  .bubble.caller{ align-self:flex-end; background:var(--admin-soft); border-bottom-right-radius:4px; }
+  .bubble .who{ font-size:11px; font-weight:700; color:var(--ink-faint); margin-bottom:3px; display:block; }
+
+  .modal-overlay{ position:fixed; inset:0; background:var(--overlay); z-index:60; display:none; align-items:center; justify-content:center; padding:20px; }
+  .modal-overlay.open{ display:flex; }
+  .modal{ background:var(--surface); border:1px solid var(--border); border-radius:16px; width:480px; max-width:100%; max-height:90vh; overflow-y:auto; padding:26px; }
+  .modal h3{ font-size:18px; margin:0 0 4px; }
+  .modal .modal-sub{ font-size:13px; color:var(--ink-muted); margin:0 0 20px; }
+  .modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:6px; }
+
+  .subtabs{ display:flex; gap:4px; background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:3px; margin-bottom:18px; overflow-x:auto; }
+  .subtab{ border:none; background:transparent; color:var(--ink-muted); padding:7px 14px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .subtab.active{ background:var(--surface); color:var(--admin); box-shadow:var(--shadow); }
+  .subpanel{ display:none; }
+  .subpanel.active{ display:block; }
+
+  .back-link{ display:inline-flex; align-items:center; gap:6px; color:var(--ink-muted); font-size:13px; font-weight:600; background:none; border:none; cursor:pointer; margin-bottom:14px; padding:0; }
+  .back-link:hover{ color:var(--ink); }
+
+  .note-row{ padding:11px 0; border-bottom:1px solid var(--border); font-size:13px; }
+  .note-row:last-child{ border-bottom:none; }
+  .note-row .n-meta{ color:var(--ink-faint); font-size:11.5px; margin-bottom:3px; }
+  .activity-row{ display:flex; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); font-size:12.5px; }
+  .activity-row:last-child{ border-bottom:none; }
+  .activity-dot{ width:6px; height:6px; border-radius:50%; background:var(--admin); margin-top:5px; flex-shrink:0; }
+  .activity-row .a-text{ color:var(--ink); }
+  .activity-row .a-time{ color:var(--ink-faint); margin-left:auto; white-space:nowrap; }
+
+  .provision-row{ display:flex; align-items:center; gap:10px; }
+  .provision-row input{ flex:1; }
+
+  .rule-card{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; padding:14px 16px; border:1px solid var(--border); border-radius:10px; margin-bottom:10px; }
+  .rule-card .rt{ font-weight:700; font-size:13.5px; margin-bottom:3px; }
+  .rule-card .rd{ font-size:12.5px; color:var(--ink-muted); line-height:1.45; }
+
+  .version-row{ display:flex; align-items:flex-start; gap:12px; padding:13px 0; border-bottom:1px solid var(--border); }
+  .version-row:last-child{ border-bottom:none; }
+  .version-dot{ width:9px; height:9px; border-radius:50%; background:var(--admin); margin-top:5px; flex-shrink:0; }
+  .version-row .v-main{ flex:1; }
+  .version-row .v-title{ font-weight:700; font-size:13.5px; }
+  .version-row .v-meta{ font-size:12px; color:var(--ink-faint); margin-top:2px; }
+  .version-row .btn{ flex-shrink:0; padding:6px 12px; font-size:12.5px; }
+
+  .incident-card{ border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin-bottom:12px; }
+  .incident-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px; flex-wrap:wrap; }
+  .incident-title{ font-weight:700; font-size:14.5px; }
+  .incident-meta{ font-size:12px; color:var(--ink-muted); margin-top:2px; }
+  .incident-updates{ margin-top:12px; border-top:1px solid var(--border); padding-top:12px; }
+  .incident-update{ display:flex; gap:10px; font-size:12.5px; padding:5px 0; }
+  .incident-update .iu-time{ color:var(--ink-faint); white-space:nowrap; flex-shrink:0; width:90px; }
+
+  .stage-badge{ display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:999px; white-space:nowrap; }
+  .stage-badge.trial{ background:var(--admin-soft); color:var(--admin); }
+  .stage-badge.demo{ background:var(--outbound-soft); color:var(--outbound); }
+  .stage-badge.negotiating{ background:var(--warning-soft); color:var(--warning); }
+  .stage-badge.won{ background:var(--success-soft); color:var(--success); }
+  .stage-badge.lost{ background:var(--border); color:var(--ink-muted); }
+
+  .key-box{ display:flex; align-items:center; gap:10px; padding:11px 13px; background:var(--bg); border:1px solid var(--border); border-radius:8px; font-family:'Space Grotesk',monospace; font-size:13px; letter-spacing:0.02em; }
+  .key-box code{ flex:1; overflow-x:auto; white-space:nowrap; }
+  .perm-table{ width:100%; border-collapse:collapse; font-size:13px; }
+  .perm-table th, .perm-table td{ padding:9px 10px; border-bottom:1px solid var(--border); text-align:center; }
+  .perm-table th:first-child, .perm-table td:first-child{ text-align:left; font-weight:700; }
+  .perm-table th{ color:var(--ink-muted); font-size:12px; font-weight:600; }
+  .perm-check{ color:var(--success); }
+  .perm-dash{ color:var(--ink-faint); }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:980px){ .kpi-row{ grid-template-columns:repeat(2,1fr); } .grid-2,.two-col,.two-col-form{ grid-template-columns:1fr; } .vendor-stats{ gap:14px; } }
+  @media (max-width:720px){
+    .shell{ grid-template-columns:1fr; grid-template-rows:64px 1fr; grid-template-areas:"topbar" "main"; }
+    main.content{ padding-bottom:calc(84px + env(safe-area-inset-bottom,0px)); }
+    .sidebar{ position:fixed; left:0; right:0; bottom:0; z-index:30; flex-direction:row; justify-content:space-around; border-right:none; border-top:1px solid var(--border); padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px)); overflow-x:auto; }
+    .brand,.admin-tag,.sidebar-footer{ display:none; }
+    nav.navlist{ flex-direction:row; flex:1; justify-content:space-around; }
+    .navitem{ flex-direction:column; gap:3px; padding:6px 4px; min-width:48px; font-size:10.5px; align-items:center; }
+    .topbar h1{ display:none; }
+    .drawer{ width:100%; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12h2l2-6 3 12 2-8 2 4h5" stroke="#EEF0F2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="brand-name">Wavecall</span>
+    </div>
+    <span class="admin-tag">PLATFORM ADMIN</span>
+    <nav class="navlist">
+      <button class="navitem active" data-nav="overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        <span>Overview</span>
+      </button>
+      <button class="navitem" data-nav="accounts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-8h6v8"/></svg>
+        <span>Accounts</span>
+      </button>
+      <button class="navitem" data-nav="pipeline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h18M6 12h12M10 19h4"/></svg>
+        <span>Pipeline</span>
+      </button>
+      <button class="navitem" data-nav="revenue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M17 6.5c0-2-2-3.5-5-3.5S7 4.5 7 6.5s2 3 5 3.5 5 1.5 5 3.5-2 3.5-5 3.5-5-1.5-5-3.5"/></svg>
+        <span>Revenue &amp; margin</span>
+      </button>
+      <button class="navitem" data-nav="infra">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg>
+        <span>Infrastructure</span>
+        <span class="badge">1</span>
+      </button>
+      <button class="navitem" data-nav="incidents">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.4 18a2 2 0 001.7 3h15.8a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>
+        <span>Incidents</span>
+      </button>
+      <button class="navitem" data-nav="compliance">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3.5v5c0 4.6-3 8.4-7 9.5-4-1.1-7-4.9-7-9.5v-5z"/><path d="M9.5 12l1.8 1.8L15 10"/></svg>
+        <span>Compliance</span>
+      </button>
+      <button class="navitem" data-nav="auditlog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h14v16l-4-3-3 3-3-3-4 3z"/><path d="M8.5 9h7M8.5 12h7"/></svg>
+        <span>Audit log</span>
+      </button>
+      <div class="nav-divider"></div>
+      <button class="navitem" data-nav="team">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 10.2a3 3 0 100-6M21.5 20c0-2.8-1.9-5-4.7-5.7"/></svg>
+        <span>Team &amp; plans</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <span class="avatar">MK</span>
+      <div class="who"><span class="name">Manikandan</span><span class="org">Owner</span></div>
+    </div>
+  </aside>
+
+  <header class="topbar">
+    <h1 id="topbar-title">Overview</h1>
+    <div class="topbar-spacer"></div>
+    <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+    <select class="range-select" id="overview-range" aria-label="Date range">
+      <option value="7d">Last 7 days</option>
+      <option value="30d" selected>Last 30 days</option>
+      <option value="90d">Last 90 days</option>
+    </select>
+    <span class="avatar" title="Manikandan">MK</span>
+  </header>
+
+  <main class="content">
+
+    <!-- OVERVIEW -->
+    <div class="page active" data-page="overview">
+      <div class="page-heading"><div><h2>Platform overview</h2><p>How Wavecall is doing across every customer.</p></div></div>
+
+      <section class="kpi-row">
+        <div class="kpi"><div class="label">Active accounts</div><div class="value num" id="ov-accounts">47</div><div class="sub up">▲ 5 new this month</div></div>
+        <div class="kpi"><div class="label">MRR</div><div class="value num" id="ov-mrr">$18,420</div><div class="sub up">▲ 11% vs last month</div></div>
+        <div class="kpi"><div class="label">Call minutes, platform-wide</div><div class="value num" id="ov-minutes">182,400</div><div class="sub up">▲ 14% vs last month</div></div>
+        <div class="kpi"><div class="label">Gross margin</div><div class="value num" id="ov-margin">38%</div><div class="sub down">▼ 2 pts vs last month</div></div>
+      </section>
+
+      <section class="grid-2">
+        <div class="panel">
+          <h3>MRR growth, last 6 months</h3>
+          <p class="panel-sub">New, expansion, and churned revenue.</p>
+          <div class="legend">
+            <span class="legend-item"><span class="legend-dot" style="background:var(--admin)"></span> MRR</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--danger)"></span> Churned</span>
+          </div>
+          <div class="chart" id="mrr-chart"></div>
+          <div class="chart-labels" id="mrr-labels"></div>
+        </div>
+        <div class="panel">
+          <h3>Needs your attention</h3>
+          <p class="panel-sub">Flags across the platform right now.</p>
+          <div class="alert crit"><div class="alert-bar"></div><div class="alert-text"><span class="t">Deepgram latency degraded</span><span class="d">Elevated ASR response time · 12 min ago</span></div></div>
+          <div class="alert warn"><div class="alert-bar"></div><div class="alert-text"><span class="t">2 accounts near their minute limit</span><span class="d">Lone Star Collections, QuickFix Plumbing</span></div></div>
+          <div class="alert warn"><div class="alert-bar"></div><div class="alert-text"><span class="t">Compliance flag on Lone Star Collections</span><span class="d">3 calls placed outside allowed window</span></div></div>
+          <div class="alert info"><div class="alert-bar"></div><div class="alert-text"><span class="t">5 new signups this week</span><span class="d">3 on Starter, 2 on Business</span></div></div>
+        </div>
+      </section>
+
+      <section class="panel" style="margin-top:16px;">
+        <h3>Accounts to watch</h3>
+        <p class="panel-sub">Highest usage relative to plan limit, or flagged for another reason.</p>
+        <div class="table-scroll"><table class="dtable">
+          <thead><tr><th>Account</th><th>Plan</th><th>Usage</th><th>Status</th></tr></thead>
+          <tbody id="watch-body"></tbody>
+        </table></div>
+      </section>
+    </div>
+
+    <!-- ACCOUNTS -->
+    <div class="page" data-page="accounts">
+      <div class="page-heading"><div><h2>Accounts</h2><p>Every business running on Wavecall.</p></div><button class="btn primary" id="add-account-btn">Add account</button></div>
+      <section class="panel">
+        <div class="toolbar">
+          <input class="search-input" id="acc-search" type="text" placeholder="Search by account name">
+          <div class="chip-row" id="acc-chips">
+            <button class="chip active" data-filter="all">All</button>
+            <button class="chip" data-filter="good">Healthy</button>
+            <button class="chip" data-filter="warn">Near limit</button>
+            <button class="chip" data-filter="crit">At risk</button>
+            <button class="chip" data-filter="churned">Churned</button>
+          </div>
+        </div>
+        <div class="table-scroll"><table class="dtable">
+          <thead><tr><th>Account</th><th>Plan</th><th>MRR</th><th>Usage this month</th><th>Status</th></tr></thead>
+          <tbody id="accounts-body"></tbody>
+        </table></div>
+      </section>
+    </div>
+
+    <!-- PIPELINE -->
+    <div class="page" data-page="pipeline">
+      <div class="page-heading"><div><h2>Pipeline</h2><p>Trials and prospects, before they become an account.</p></div></div>
+      <section class="kpi-row">
+        <div class="kpi"><div class="label">Active trials</div><div class="value num">6</div><div class="sub">across all stages</div></div>
+        <div class="kpi"><div class="label">Demos scheduled</div><div class="value num">3</div><div class="sub">this week</div></div>
+        <div class="kpi"><div class="label">Trial → paid conversion</div><div class="value num">42%</div><div class="sub up">▲ 6 pts vs last quarter</div></div>
+        <div class="kpi"><div class="label">Avg. days to convert</div><div class="value num">11 days</div><div class="sub">from trial start</div></div>
+      </section>
+      <section class="panel">
+        <div class="table-scroll"><table class="dtable">
+          <thead><tr><th>Prospect</th><th>Stage</th><th>Source</th><th>Days in stage</th><th></th></tr></thead>
+          <tbody id="pipeline-body"></tbody>
+        </table></div>
+      </section>
+    </div>
+
+    <!-- REVENUE & MARGIN -->
+    <div class="page" data-page="revenue">
+      <div class="page-heading"><div><h2>Revenue &amp; margin</h2><p>What customers pay you, against what your vendors cost.</p></div></div>
+      <section class="kpi-row">
+        <div class="kpi"><div class="label">Revenue, last 30 days</div><div class="value num">$18,420</div><div class="sub up">▲ 11% vs prior period</div></div>
+        <div class="kpi"><div class="label">Vendor cost, last 30 days</div><div class="value num">$11,400</div><div class="sub down">▲ 9% vs prior period</div></div>
+        <div class="kpi"><div class="label">Gross margin</div><div class="value num">38%</div><div class="sub down">▼ 2 pts vs prior period</div></div>
+        <div class="kpi"><div class="label">Blended cost / minute</div><div class="value num">$0.063</div><div class="sub">vs $0.101 billed / min</div></div>
+      </section>
+      <div class="two-col">
+        <section class="panel">
+          <h3>Vendor cost breakdown</h3>
+          <p class="panel-sub">Where your infrastructure spend goes.</p>
+          <div id="cost-list"></div>
+        </section>
+        <section class="panel">
+          <h3>Margin over time</h3>
+          <p class="panel-sub">Revenue vs. vendor cost, last 6 months.</p>
+          <div class="chart" id="margin-chart"></div>
+          <div class="chart-labels" id="margin-labels"></div>
+        </section>
+      </div>
+    </div>
+
+    <!-- INFRASTRUCTURE -->
+    <div class="page" data-page="infra">
+      <div class="page-heading"><div><h2>Infrastructure</h2><p>The vendors your agent runs on, and whether they're healthy right now.</p></div></div>
+      <div id="vendor-list"></div>
+      <section class="panel" style="margin-top:6px;">
+        <h3>Platform call volume, last 14 days</h3>
+        <p class="panel-sub">Every call across every account.</p>
+        <div class="chart" id="volume-chart"></div>
+        <div class="chart-labels" id="volume-labels"></div>
+      </section>
+    </div>
+
+    <!-- INCIDENTS -->
+    <div class="page" data-page="incidents">
+      <div class="page-heading"><div><h2>Incidents</h2><p>What's gone wrong, what's being watched, and what clients would see on a status page.</p></div><button class="btn primary" id="new-incident-btn">Report incident</button></div>
+      <div id="incidents-list"></div>
+    </div>
+
+    <!-- COMPLIANCE -->
+    <div class="page" data-page="compliance">
+      <div class="page-heading"><div><h2>Compliance</h2><p>Consent and calling-window enforcement across every account.</p></div></div>
+      <section class="kpi-row">
+        <div class="kpi"><div class="label">Total opt-outs, platform-wide</div><div class="value num">1,240</div><div class="sub">across 47 accounts</div></div>
+        <div class="kpi"><div class="label">Accounts with open flags</div><div class="value num">2</div><div class="sub down">needs review</div></div>
+        <div class="kpi"><div class="label">Consent coverage</div><div class="value num">96%</div><div class="sub up">▲ 1 pt this month</div></div>
+        <div class="kpi"><div class="label">Regions enforced</div><div class="value num">3</div><div class="sub">US · UK · EU</div></div>
+      </section>
+      <section class="panel">
+        <h3>Calling-window enforcement</h3>
+        <p class="panel-sub">What happens when a call would violate a region's allowed calling hours.</p>
+        <div class="field" style="margin-bottom:0;"><label>When a call is blocked</label><select id="blocked-call-behavior"><option>Queue for the next allowed hour</option><option>Drop and log only — no retry</option><option>Notify the account owner to reschedule manually</option></select><div class="hint">Applies platform-wide. An individual account's Agent setup can override this if the client needs different handling.</div></div>
+      </section>
+
+      <section class="panel" style="margin-top:16px;">
+        <h3>Open compliance flags</h3>
+        <p class="panel-sub">These need a human look before the next campaign send.</p>
+        <div class="table-scroll"><table class="dtable">
+          <thead><tr><th>Account</th><th>Issue</th><th>Severity</th><th>Raised</th></tr></thead>
+          <tbody id="flags-body"></tbody>
+        </table></div>
+      </section>
+
+      <section class="panel" style="margin-top:16px;">
+        <h3>Data deletion requests</h3>
+        <p class="panel-sub">GDPR / CCPA "forget me" requests, tracked to completion.</p>
+        <div class="table-scroll"><table class="dtable">
+          <thead><tr><th>Account</th><th>Requested by</th><th>Date</th><th>Scope</th><th>Status</th></tr></thead>
+          <tbody id="deletion-body"></tbody>
+        </table></div>
+      </section>
+    </div>
+
+    <!-- AUDIT LOG -->
+    <div class="page" data-page="auditlog">
+      <div class="page-heading"><div><h2>Audit log</h2><p>Every change made by your team, across every account.</p></div></div>
+      <section class="panel">
+        <div class="toolbar">
+          <input class="search-input" id="audit-search" type="text" placeholder="Search by teammate or account">
+        </div>
+        <div class="table-scroll"><table class="dtable">
+          <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Account</th></tr></thead>
+          <tbody id="platform-audit-body"></tbody>
+        </table></div>
+      </section>
+    </div>
+
+    <!-- TEAM & PLANS -->
+    <div class="page" data-page="team">
+      <div class="page-heading"><div><h2>Team &amp; plans</h2><p>Who has access, and what you charge.</p></div></div>
+      <div class="two-col">
+        <section class="panel">
+          <h3>Wavecall team</h3>
+          <p class="panel-sub">Internal access — not client-side users.</p>
+          <div id="internal-team-list"></div>
+          <button class="btn" style="margin-top:14px;">Invite teammate</button>
+        </section>
+        <section class="panel">
+          <h3>Plans</h3>
+          <p class="panel-sub">What every account is billed against.</p>
+          <div id="plans-list"></div>
+        </section>
+      </div>
+
+      <section class="panel" style="margin-top:16px;">
+        <h3>Roles &amp; permissions</h3>
+        <p class="panel-sub">What each role can see and do on the platform.</p>
+        <div class="table-scroll"><table class="perm-table">
+          <thead><tr><th>Permission</th><th>Owner</th><th>Admin</th><th>Support</th><th>Read-only</th></tr></thead>
+          <tbody>
+            <tr><td>View accounts &amp; reports</td><td class="perm-check">✓</td><td class="perm-check">✓</td><td class="perm-check">✓</td><td class="perm-check">✓</td></tr>
+            <tr><td>Edit agent config &amp; knowledge base</td><td class="perm-check">✓</td><td class="perm-check">✓</td><td class="perm-check">✓</td><td class="perm-dash">—</td></tr>
+            <tr><td>Add or manage accounts</td><td class="perm-check">✓</td><td class="perm-check">✓</td><td class="perm-dash">—</td><td class="perm-dash">—</td></tr>
+            <tr><td>View &amp; change billing</td><td class="perm-check">✓</td><td class="perm-check">✓</td><td class="perm-dash">—</td><td class="perm-dash">—</td></tr>
+            <tr><td>Manage team &amp; roles</td><td class="perm-check">✓</td><td class="perm-dash">—</td><td class="perm-dash">—</td><td class="perm-dash">—</td></tr>
+            <tr><td>Issue / revoke API keys</td><td class="perm-check">✓</td><td class="perm-check">✓</td><td class="perm-dash">—</td><td class="perm-dash">—</td></tr>
+            <tr><td>Suspend an account</td><td class="perm-check">✓</td><td class="perm-check">✓</td><td class="perm-dash">—</td><td class="perm-dash">—</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section class="panel" style="margin-top:16px;">
+        <h3>Security</h3>
+        <p class="panel-sub">Every account here can see every client's call recordings and live API keys — this matters more than almost anything else on this page.</p>
+        <div class="rule-card"><div><div class="rt">Require two-factor authentication</div><div class="rd">Applies to every teammate, no exceptions — a compromised login is a compromise of every client at once.</div></div><label class="switch"><input type="checkbox" checked><span class="track"></span></label></div>
+        <div class="rule-card" style="margin-bottom:0;"><div><div class="rt">Auto-sign-out after inactivity</div><div class="rd">Ends idle admin sessions automatically.</div></div><select style="width:auto; padding:6px 10px;"><option>15 minutes</option><option>30 minutes</option><option>1 hour</option></select></div>
+        <h3 style="margin-top:20px;">Active sessions</h3>
+        <div class="table-scroll"><table class="dtable">
+          <thead><tr><th>Teammate</th><th>Device</th><th>Location</th><th>Last active</th><th></th></tr></thead>
+          <tbody id="sessions-body"></tbody>
+        </table></div>
+      </section>
+    </div>
+
+    <!-- ACCOUNT WORKSPACE (opened by clicking into an account) -->
+    <div class="page" data-page="account-detail">
+      <button class="back-link" id="back-to-accounts">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg> Back to Accounts
+      </button>
+      <div class="page-heading">
+        <div>
+          <h2 id="wk-name">—</h2>
+          <p id="wk-sub">—</p>
+        </div>
+        <span id="wk-status"></span>
+      </div>
+
+      <div class="subtabs" id="wk-subtabs">
+        <button class="subtab active" data-subtab="setup">Agent setup</button>
+        <button class="subtab" data-subtab="kb">Knowledge base</button>
+        <button class="subtab" data-subtab="test">Test agent</button>
+        <button class="subtab" data-subtab="qa">Call QA</button>
+        <button class="subtab" data-subtab="history">Config history</button>
+        <button class="subtab" data-subtab="api">API &amp; webhooks</button>
+        <button class="subtab" data-subtab="billing">Usage &amp; billing</button>
+        <button class="subtab" data-subtab="notes">Notes &amp; activity</button>
+        <button class="subtab" data-subtab="compliance">Compliance</button>
+      </div>
+
+      <!-- Agent setup -->
+      <div class="subpanel active" data-subpanel="setup">
+        <div class="two-col">
+          <section class="panel">
+            <h3>Identity</h3>
+            <p class="panel-sub">How this client's agent presents itself on a call.</p>
+            <div class="field"><label>Agent name</label><input type="text" id="wk-agent-name" value="Wavecall Assistant"></div>
+            <div class="two-col-form">
+              <div class="field"><label>Voice</label><select id="wk-voice"><option>Warm &amp; friendly (female)</option><option>Calm &amp; professional (male)</option><option>Upbeat &amp; energetic (female)</option><option>Neutral &amp; clear (male)</option></select></div>
+              <div class="field"><label>Language</label><select id="wk-lang"><option>English (US)</option><option>English (UK)</option><option>Spanish</option><option>French</option></select></div>
+            </div>
+            <div class="field"><label>Greeting message</label><textarea id="wk-greeting"></textarea><div class="hint">Used verbatim by the agent and by the Test agent tab.</div></div>
+          </section>
+          <section class="panel">
+            <h3>Phone number</h3>
+            <p class="panel-sub">Required before this account can take real calls.</p>
+            <div class="provision-row">
+              <input type="tel" id="wk-phone" placeholder="+1 (___) ___-____">
+              <button class="btn primary" id="wk-provision-btn">Provision</button>
+            </div>
+            <div class="field" style="margin-top:14px; margin-bottom:0;"><span class="pill neutral" id="wk-provision-status">Not provisioned</span></div>
+            <h3 style="margin-top:22px;">Call status</h3>
+            <p class="panel-sub" style="margin-bottom:10px;">A provisioned number doesn't start taking real calls until you explicitly go live — so a bad first call never happens on a real customer.</p>
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <span id="wk-call-status-pill"></span>
+              <button class="btn primary" id="wk-golive-btn">Go live</button>
+              <button class="btn" id="wk-suspend-btn">Suspend account</button>
+            </div>
+            <div class="hint" id="wk-call-status-hint" style="margin-top:8px;"></div>
+            <h3 style="margin-top:22px;">Abuse protection</h3>
+            <div class="field"><label>Max outbound calls per hour</label><input type="text" id="wk-rate-limit" value="150"><div class="hint">Auto-pauses new outbound calls if this account exceeds it — protects your vendor budget and carrier reputation.</div></div>
+            <h3 style="margin-top:22px;">Business hours</h3>
+            <div class="hours-grid" id="wk-hours"></div>
+          </section>
+        </div>
+      </div>
+
+      <!-- Knowledge base -->
+      <div class="subpanel" data-subpanel="kb">
+        <section class="panel">
+          <h3>Documents this agent reads from</h3>
+          <p class="panel-sub">Upload anything the client sent you — pricing, FAQs, policies. Stored against this account only.</p>
+          <div id="wk-kb-list"></div>
+          <div class="kb-drop">Drag files here, or <b>click to upload</b> — PDF, DOCX, CSV, TXT</div>
+        </section>
+      </div>
+
+      <!-- Test agent -->
+      <div class="subpanel" data-subpanel="test">
+        <section class="panel">
+          <h3>Simulated call</h3>
+          <p class="panel-sub">Uses this account's actual greeting and knowledge base. Nothing is sent to a real phone.</p>
+          <div class="transcript" id="wk-test-transcript"></div>
+          <div style="display:flex; gap:10px;">
+            <input type="text" id="wk-test-input" placeholder="Type what the caller would say…" style="flex:1;">
+            <button class="btn primary" id="wk-test-send">Send</button>
+          </div>
+        </section>
+      </div>
+
+      <!-- Call QA -->
+      <div class="subpanel" data-subpanel="qa">
+        <section class="panel">
+          <h3>Flagged calls</h3>
+          <p class="panel-sub">Calls the agent marked low-confidence, or that a customer reacted badly to — worth a human listen.</p>
+          <div class="table-scroll"><table class="dtable">
+            <thead><tr><th>Call</th><th>Reason flagged</th><th>QA score</th><th>Reviewed</th></tr></thead>
+            <tbody id="wk-qa-body"></tbody>
+          </table></div>
+        </section>
+      </div>
+
+      <!-- Config history -->
+      <div class="subpanel" data-subpanel="history">
+        <section class="panel">
+          <h3>Agent config versions</h3>
+          <p class="panel-sub">Every saved change to this agent's setup. Restore an earlier version if something breaks.</p>
+          <div id="wk-history-list"></div>
+        </section>
+      </div>
+
+      <!-- API & webhooks -->
+      <div class="subpanel" data-subpanel="api">
+        <div class="two-col">
+          <section class="panel">
+            <h3>API key</h3>
+            <p class="panel-sub">Scoped to this account only. For security, a key is shown in full only once — right after it's generated — then masked forever.</p>
+            <div class="key-box"><code id="wk-api-key">wv_live_•••• •••• •••• 8f2a</code></div>
+            <button class="btn" style="margin-top:12px;" id="wk-regen-key">Regenerate key</button>
+            <div class="hint" id="wk-key-hint">Regenerating immediately invalidates the old key — the client's integration will need updating.</div>
+          </section>
+          <section class="panel">
+            <h3>Webhook</h3>
+            <p class="panel-sub">Where Wavecall sends real-time events for this account.</p>
+            <div class="field"><label>Endpoint URL</label><input type="text" id="wk-webhook-url" placeholder="https://client-crm.com/webhooks/wavecall"></div>
+            <div class="field"><label>Signing secret</label>
+              <div class="key-box"><code id="wk-webhook-secret">whsec_•••• •••• •••• ••••</code></div>
+              <div class="hint">Client verifies this against the request signature (HMAC-SHA256) so a forged event can't be accepted as real.</div>
+              <button class="btn" style="margin-top:10px;" id="wk-regen-secret">Regenerate secret</button>
+            </div>
+            <div class="rule-card"><div><div class="rt">call.completed</div><div class="rd">Fires after every finished call, with transcript and outcome.</div></div><label class="switch"><input type="checkbox" checked><span class="track"></span></label></div>
+            <div class="rule-card"><div><div class="rt">call.escalated</div><div class="rd">Fires the moment a call hands off to a person.</div></div><label class="switch"><input type="checkbox" checked><span class="track"></span></label></div>
+            <div class="rule-card" style="margin-bottom:0;"><div><div class="rt">compliance.flag_raised</div><div class="rd">Fires if a call trips a consent or calling-window rule.</div></div><label class="switch"><input type="checkbox"><span class="track"></span></label></div>
+          </section>
+        </div>
+      </div>
+
+      <!-- Usage & billing -->
+      <div class="subpanel" data-subpanel="billing">
+        <section class="kpi-row" style="margin-bottom:16px;">
+          <div class="kpi"><div class="label">Health score</div><div class="value num" id="wk-health-score">—</div><div class="sub" id="wk-health-sub">—</div></div>
+          <div class="kpi"><div class="label">Payment status</div><div class="value num" id="wk-payment-status">—</div><div class="sub" id="wk-payment-sub">—</div></div>
+        </section>
+        <div class="two-col">
+          <section class="panel">
+            <h3>Plan</h3>
+            <div class="field"><label>Current plan</label><select id="wk-plan"><option>Starter</option><option>Business</option><option>Growth</option></select></div>
+            <div class="field"><label style="margin-bottom:4px;">Usage this month</label>
+              <div class="usage-track" style="width:100%; height:10px;"><div class="usage-fill" id="wk-usage-fill" style="background:var(--admin);"></div></div>
+              <div class="hint" id="wk-usage-text">—</div>
+            </div>
+            <button class="btn">Save plan change</button>
+          </section>
+          <section class="panel">
+            <h3>Invoices</h3>
+            <p class="panel-sub">Last 3 billing cycles.</p>
+            <div class="table-scroll"><table class="dtable">
+              <thead><tr><th>Period</th><th>Amount</th><th>Status</th></tr></thead>
+              <tbody id="wk-invoices"></tbody>
+            </table></div>
+          </section>
+        </div>
+      </div>
+
+      <!-- Notes & activity -->
+      <div class="subpanel" data-subpanel="notes">
+        <div class="two-col">
+          <section class="panel">
+            <h3>Internal notes</h3>
+            <p class="panel-sub">Only your team sees this — never the client.</p>
+            <div id="wk-notes-list"></div>
+            <div class="field" style="margin-top:14px;"><textarea id="wk-note-input" placeholder="Add a note about this account…" style="min-height:60px;"></textarea></div>
+            <button class="btn" id="wk-note-add">Add note</button>
+          </section>
+          <section class="panel">
+            <h3>Activity log</h3>
+            <p class="panel-sub">Every change made to this account.</p>
+            <div id="wk-activity-list"></div>
+          </section>
+        </div>
+      </div>
+
+      <!-- Compliance -->
+      <div class="subpanel" data-subpanel="compliance">
+        <section class="panel">
+          <h3>Compliance status</h3>
+          <p class="panel-sub" id="wk-compliance-sub">—</p>
+          <div id="wk-compliance-list"></div>
+        </section>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="drawer-overlay" id="drawer-overlay"></div>
+<div class="drawer" id="drawer">
+  <button class="drawer-close" id="drawer-close" aria-label="Close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <h3 id="drawer-name">—</h3>
+  <p class="drawer-sub" id="drawer-sub">—</p>
+  <div class="drawer-meta">
+    <div><div class="m-label">Plan</div><div class="m-value" id="drawer-plan">—</div></div>
+    <div><div class="m-label">MRR</div><div class="m-value" id="drawer-mrr">—</div></div>
+    <div><div class="m-label">Usage this month</div><div class="m-value" id="drawer-usage">—</div></div>
+    <div><div class="m-label">Status</div><div class="m-value" id="drawer-status">—</div></div>
+  </div>
+  <button class="btn primary" id="drawer-manage-btn" style="width:100%; margin-bottom:8px;">Manage this account</button>
+  <button class="btn" style="width:100%;">Open as this account</button>
+</div>
+
+<!-- Add client modal -->
+<div class="modal-overlay" id="add-modal-overlay">
+  <div class="modal">
+    <h3>Add a client</h3>
+    <p class="modal-sub">Creates a new account. You'll configure their agent and knowledge base next.</p>
+    <div class="field"><label>Business name</label><input type="text" id="new-name" placeholder="e.g. Harbor Dental Group"></div>
+    <div class="two-col-form">
+      <div class="field"><label>Vertical</label><input type="text" id="new-vertical" placeholder="e.g. Dental, US"></div>
+      <div class="field"><label>Plan</label><select id="new-plan"><option>Starter</option><option>Business</option><option>Growth</option></select></div>
+    </div>
+    <div class="field"><label>Primary contact email</label><input type="email" id="new-email" placeholder="owner@business.com"></div>
+    <div class="modal-actions">
+      <button class="btn" id="add-modal-cancel">Cancel</button>
+      <button class="btn primary" id="add-modal-create">Create account</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  var ACCOUNTS = [
+    {name:"Harbor Dental Group", vertical:"Dental · US", plan:"Business", price:299, used:2560, cap:4000, status:"good", callStatus:"live",
+      greeting:"Hi, this is the Wavecall Assistant calling on behalf of Harbor Dental Group. How can I help you today?", voice:"Warm & friendly (female)", lang:"English (US)", phone:"+1 415 555 0100", provisioned:true,
+      health:88, healthNote:"Trending up — steady usage, no negative-sentiment spikes.", payment:"good",
+      kb:[{name:"Services & pricing FAQ.pdf", meta:"Updated 3 days ago · 240 KB"},{name:"Cancellation policy.pdf", meta:"Updated 2 weeks ago · 80 KB"}],
+      qa:[{call:"Sep 21, 9:35 AM", reason:"Caller repeated question 3x — possible confusion", score:"3 / 5", reviewed:false}],
+      history:[{title:"Greeting updated", meta:"Sep 10, 2026 · Manikandan"},{title:"Business hours changed to 8am–6pm", meta:"Sep 5, 2026 · Manikandan"},{title:"Initial agent config saved", meta:"Sep 3, 2026 · Manikandan"}],
+      notes:[{text:"Onboarded via referral from BrightSmile. Wants renewal reminders live first.", meta:"Sep 2, 2026 · Manikandan"}],
+      activity:[{text:"Account created", time:"Sep 2, 2026"},{text:"Agent config saved", time:"Sep 3, 2026"},{text:"Phone number provisioned", time:"Sep 3, 2026"},{text:"Plan changed to Business", time:"Sep 10, 2026"}],
+      invoices:[{period:"Sep 2026", amount:"$299.00", status:"Paid"},{period:"Aug 2026", amount:"$299.00", status:"Paid"},{period:"Jul 2026", amount:"$249.00", status:"Paid"}]},
+    {name:"Coastal Realty Group", vertical:"Real estate · US", plan:"Growth", price:499, used:8900, cap:10000, status:"warn", callStatus:"live",
+      greeting:"Hi, this is the Wavecall Assistant calling on behalf of Coastal Realty Group. How can I help you today?", voice:"Calm & professional (male)", lang:"English (US)", phone:"+1 619 555 0122", provisioned:true,
+      health:71, healthNote:"Usage climbing fast — worth a check-in before they hit their cap two months running.", payment:"good",
+      kb:[{name:"Listings script.docx", meta:"Updated 1 week ago · 60 KB"}],
+      qa:[], history:[{title:"Plan changed to Growth", meta:"Sep 5, 2026 · Manikandan"},{title:"Initial agent config saved", meta:"Aug 20, 2026 · Manikandan"}],
+      notes:[{text:"Heavy outbound usage — flag if they blow through Growth plan cap two months running.", meta:"Sep 14, 2026 · Manikandan"}],
+      activity:[{text:"Account created", time:"Aug 20, 2026"},{text:"Plan changed to Growth", time:"Sep 5, 2026"}],
+      invoices:[{period:"Sep 2026", amount:"$499.00", status:"Paid"},{period:"Aug 2026", amount:"$499.00", status:"Paid"}]},
+    {name:"Fresher Focus", vertical:"Career training · IN", plan:"Starter", price:99, used:340, cap:1000, status:"good", callStatus:"testing",
+      greeting:"Hi, this is the Wavecall Assistant calling on behalf of Fresher Focus. How can I help you today?", voice:"Upbeat & energetic (female)", lang:"English (US)", phone:"", provisioned:false,
+      health:64, healthNote:"Too early to score confidently — not yet taking live calls.", payment:"good",
+      kb:[], qa:[], history:[{title:"Initial agent config saved", meta:"Sep 18, 2026 · Manikandan"}],
+      notes:[{text:"Still finalizing their FAQ doc before we provision a number.", meta:"Sep 20, 2026 · Manikandan"}],
+      activity:[{text:"Account created", time:"Sep 18, 2026"}],
+      invoices:[{period:"Sep 2026", amount:"$99.00", status:"Paid"}]},
+    {name:"BrightSmile Clinics", vertical:"Dental · UK", plan:"Business", price:299, used:1200, cap:4000, status:"good", callStatus:"live",
+      greeting:"Hi, this is the Wavecall Assistant calling on behalf of BrightSmile Clinics. How can I help you today?", voice:"Warm & friendly (female)", lang:"English (UK)", phone:"+44 20 7946 0958", provisioned:true,
+      health:92, healthNote:"Your healthiest account — stable usage, zero flags, on-time payments.", payment:"good",
+      kb:[{name:"NHS vs private pricing.pdf", meta:"Updated 1 month ago · 120 KB"}], qa:[], notes:[],
+      history:[{title:"Initial agent config saved", meta:"Jul 12, 2026 · Manikandan"}],
+      activity:[{text:"Account created", time:"Jul 12, 2026"},{text:"Phone number provisioned", time:"Jul 14, 2026"}],
+      invoices:[{period:"Sep 2026", amount:"$299.00", status:"Paid"},{period:"Aug 2026", amount:"$299.00", status:"Paid"}]},
+    {name:"QuickFix Plumbing", vertical:"Home services · US", plan:"Starter", price:99, used:990, cap:1000, status:"warn", callStatus:"live",
+      greeting:"Hi, this is the Wavecall Assistant calling on behalf of QuickFix Plumbing. How can I help you today?", voice:"Neutral & clear (male)", lang:"English (US)", phone:"+1 214 555 0177", provisioned:true,
+      health:46, healthNote:"Declining — open compliance flag, near usage cap, and a failed payment this cycle.", payment:"failed",
+      kb:[{name:"Service area & rates.txt", meta:"Updated 3 weeks ago · 8 KB"}],
+      qa:[{call:"Sep 20, 2:14 PM", reason:"Agent gave outdated pricing", score:"2 / 5", reviewed:false}],
+      history:[{title:"Initial agent config saved", meta:"Aug 1, 2026 · Manikandan"}],
+      notes:[{text:"Compliance flag open — missing consent on 2 contacts. Following up before next campaign.", meta:"Sep 18, 2026 · Manikandan"}],
+      activity:[{text:"Account created", time:"Aug 1, 2026"},{text:"Compliance flag raised", time:"Sep 18, 2026"}],
+      invoices:[{period:"Sep 2026", amount:"$99.00", status:"Failed"},{period:"Aug 2026", amount:"$99.00", status:"Paid"}]},
+    {name:"Lone Star Collections", vertical:"Collections · US", plan:"Growth", price:499, used:9800, cap:10000, status:"crit", callStatus:"live",
+      greeting:"Hi, this is the Wavecall Assistant calling on behalf of Lone Star Collections. How can I help you today?", voice:"Calm & professional (male)", lang:"English (US)", phone:"+1 972 555 0140", provisioned:true,
+      health:38, healthNote:"At risk — active TCPA flag, over 98% of usage cap, retrying a failed payment.", payment:"retrying",
+      kb:[{name:"Dispute handling script.docx", meta:"Updated 2 months ago · 45 KB"}],
+      qa:[{call:"Sep 19, 11:02 AM", reason:"Escalation missed — caller asked for a supervisor twice", score:"1 / 5", reviewed:false},{call:"Sep 17, 4:40 PM", reason:"Tone flagged as too aggressive", score:"2 / 5", reviewed:true}],
+      history:[{title:"Calling-window override enabled", meta:"Sep 19, 2026 · Co-founder"},{title:"Initial agent config saved", meta:"Jun 5, 2026 · Manikandan"}],
+      notes:[{text:"TCPA flag on 3 calls last week — recheck their calling-window override setting.", meta:"Sep 19, 2026 · Manikandan"}],
+      activity:[{text:"Account created", time:"Jun 5, 2026"},{text:"Compliance flag raised", time:"Sep 19, 2026"},{text:"Usage near cap warning sent", time:"Sep 21, 2026"},{text:"Payment failed, retry scheduled", time:"Sep 22, 2026"}],
+      invoices:[{period:"Sep 2026", amount:"$499.00", status:"Retrying"},{period:"Aug 2026", amount:"$639.00", status:"Paid"}]},
+    {name:"Sunrise Auto Group", vertical:"Automotive · US", plan:"Business", price:299, used:0, cap:4000, status:"churned", callStatus:"suspended",
+      greeting:"Hi, this is the Wavecall Assistant calling on behalf of Sunrise Auto Group. How can I help you today?", voice:"Neutral & clear (male)", lang:"English (US)", phone:"+1 480 555 0166", provisioned:false,
+      health:0, healthNote:"Cancelled account.", payment:"cancelled",
+      kb:[], qa:[], history:[{title:"Account cancelled", meta:"Sep 8, 2026 · Manikandan"}],
+      notes:[{text:"Cancelled — cited budget. Revisit in Q1 once they re-open the service department.", meta:"Sep 8, 2026 · Manikandan"}],
+      activity:[{text:"Account created", time:"May 2, 2026"},{text:"Cancelled", time:"Sep 8, 2026"}],
+      invoices:[{period:"Aug 2026", amount:"$299.00", status:"Paid"}]},
+    {name:"Meridian Legal Partners", vertical:"Legal intake · UK", plan:"Growth", price:499, used:5400, cap:10000, status:"good", callStatus:"live",
+      greeting:"Hi, this is the Wavecall Assistant calling on behalf of Meridian Legal Partners. How can I help you today?", voice:"Calm & professional (male)", lang:"English (UK)", phone:"+44 161 496 0210", provisioned:true,
+      health:85, healthNote:"Healthy — steady mid-plan usage, active knowledge base updates.", payment:"good",
+      kb:[{name:"Intake questionnaire.pdf", meta:"Updated 5 days ago · 95 KB"},{name:"Practice areas.docx", meta:"Updated 5 days ago · 30 KB"}], qa:[],
+      history:[{title:"Knowledge base updated", meta:"Sep 16, 2026 · Co-founder"},{title:"Initial agent config saved", meta:"Jun 28, 2026 · Manikandan"}], notes:[],
+      activity:[{text:"Account created", time:"Jun 28, 2026"},{text:"Knowledge base updated", time:"Sep 16, 2026"}],
+      invoices:[{period:"Sep 2026", amount:"$499.00", status:"Paid"}]},
+    {name:"Northbridge Vet Clinic", vertical:"Veterinary · US", plan:"Starter", price:99, used:610, cap:1000, status:"good", callStatus:"live",
+      greeting:"Hi, this is the Wavecall Assistant calling on behalf of Northbridge Vet Clinic. How can I help you today?", voice:"Warm & friendly (female)", lang:"English (US)", phone:"+1 303 555 0188", provisioned:true,
+      health:79, healthNote:"Healthy, comfortably within plan limits.", payment:"good",
+      kb:[{name:"Emergency triage script.pdf", meta:"Updated 2 weeks ago · 55 KB"}], qa:[],
+      history:[{title:"Initial agent config saved", meta:"Jul 30, 2026 · Manikandan"}], notes:[],
+      activity:[{text:"Account created", time:"Jul 30, 2026"}],
+      invoices:[{period:"Sep 2026", amount:"$99.00", status:"Paid"}]}
+  ];
+  function statusPill(s){
+    var map = {good:["Healthy","good"], warn:["Near limit","warn"], crit:["At risk","crit"], churned:["Churned","neutral"]};
+    var m = map[s];
+    return '<span class="pill '+m[1]+'"><span class="dot"></span>'+m[0]+'</span>';
+  }
+  function usageCell(a){
+    var pct = Math.round(a.used/a.cap*100);
+    var color = pct>=95?'var(--danger)':pct>=80?'var(--warning)':'var(--inbound)';
+    return '<span class="usage-track"><span class="usage-fill" style="width:'+Math.min(pct,100)+'%; background:'+color+'"></span></span>'+a.used.toLocaleString()+' / '+a.cap.toLocaleString()+' min';
+  }
+  function accountRow(a){
+    return '<tr data-name="'+a.name+'"><td><span class="cell-name">'+a.name+'</span><span class="cell-sub">'+a.vertical+'</span></td>'+
+      '<td>'+a.plan+'</td><td class="num">$'+a.price+'</td><td>'+usageCell(a)+'</td><td>'+statusPill(a.status)+'</td></tr>';
+  }
+
+  // Overview: accounts to watch (top 4 by usage %, excluding churned)
+  var watchBody = document.getElementById('watch-body');
+  ACCOUNTS.filter(function(a){ return a.status !== 'churned'; })
+    .sort(function(x,y){ return (y.used/y.cap) - (x.used/x.cap); })
+    .slice(0,4)
+    .forEach(function(a){
+      watchBody.insertAdjacentHTML('beforeend',
+        '<tr data-name="'+a.name+'"><td><span class="cell-name">'+a.name+'</span><span class="cell-sub">'+a.vertical+'</span></td><td>'+a.plan+'</td><td>'+usageCell(a)+'</td><td>'+statusPill(a.status)+'</td></tr>'
+      );
+    });
+
+  // Accounts page
+  var accBody = document.getElementById('accounts-body');
+  function renderAccounts(){
+    accBody.innerHTML = "";
+    var q = document.getElementById('acc-search').value.trim().toLowerCase();
+    var filter = document.querySelector('#acc-chips .chip.active').getAttribute('data-filter');
+    var shown = 0;
+    ACCOUNTS.forEach(function(a){
+      var matchesQ = !q || a.name.toLowerCase().indexOf(q) !== -1;
+      var matchesF = filter === 'all' || a.status === filter;
+      if (matchesQ && matchesF){ accBody.insertAdjacentHTML('beforeend', accountRow(a)); shown++; }
+    });
+    if (shown === 0){
+      accBody.innerHTML = '<tr><td colspan="5"><div style="padding:30px; text-align:center; color:var(--ink-muted);">No accounts match.</div></td></tr>';
+    }
+  }
+  renderAccounts();
+  document.getElementById('acc-search').addEventListener('input', renderAccounts);
+  document.querySelectorAll('#acc-chips .chip').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      document.querySelectorAll('#acc-chips .chip').forEach(function(c){ c.classList.remove('active'); });
+      chip.classList.add('active');
+      renderAccounts();
+    });
+  });
+
+  // Drawer
+  var overlay = document.getElementById('drawer-overlay');
+  var drawer = document.getElementById('drawer');
+  var currentDrawerAccount = null;
+  function openDrawer(a){
+    currentDrawerAccount = a;
+    document.getElementById('drawer-name').textContent = a.name;
+    document.getElementById('drawer-sub').textContent = a.vertical;
+    document.getElementById('drawer-plan').textContent = a.plan;
+    document.getElementById('drawer-mrr').textContent = '$' + a.price + ' / mo';
+    document.getElementById('drawer-usage').textContent = a.used.toLocaleString() + ' / ' + a.cap.toLocaleString() + ' min';
+    document.getElementById('drawer-status').innerHTML = statusPill(a.status);
+    overlay.classList.add('open'); drawer.classList.add('open');
+  }
+  function closeDrawer(){ overlay.classList.remove('open'); drawer.classList.remove('open'); }
+  document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+  overlay.addEventListener('click', closeDrawer);
+  document.addEventListener('click', function(e){
+    var row = e.target.closest('tr[data-name]');
+    if (row){
+      var acc = ACCOUNTS.find(function(a){ return a.name === row.getAttribute('data-name'); });
+      if (acc) openDrawer(acc);
+    }
+  });
+
+  // MRR chart
+  (function(){
+    var months = ['Apr','May','Jun','Jul','Aug','Sep'];
+    var mrr = [11200,12800,14100,15600,16700,18420];
+    var churn = [400,300,600,250,500,350];
+    var max = 20000;
+    var chart = document.getElementById('mrr-chart');
+    var labels = document.getElementById('mrr-labels');
+    for (var i=0;i<months.length;i++){
+      var col = document.createElement('div'); col.className = 'chart-col';
+      var m = document.createElement('div'); m.className='seg'; m.style.background='var(--admin)'; m.style.height=(mrr[i]/max*100)+'%';
+      col.appendChild(m); chart.appendChild(col);
+      var lab = document.createElement('span'); lab.textContent = months[i]; labels.appendChild(lab);
+    }
+  })();
+
+  // Watch list churn KPI extra (unused placeholder avoided)
+
+  // Cost breakdown
+  var COSTS = [
+    {name:"Retell (orchestration)", val:6200, color:"var(--admin)"},
+    {name:"Twilio (telephony)", val:2300, color:"var(--outbound)"},
+    {name:"ElevenLabs (TTS)", val:1800, color:"var(--inbound)"},
+    {name:"Deepgram (ASR)", val:1100, color:"var(--warning)"}
+  ];
+  (function(){
+    var total = COSTS.reduce(function(s,c){ return s+c.val; }, 0);
+    var list = document.getElementById('cost-list');
+    if (!list) return;
+    COSTS.forEach(function(c){
+      list.insertAdjacentHTML('beforeend',
+        '<div class="cost-row"><span class="cr-dot" style="background:'+c.color+'"></span><span class="cr-name">'+c.name+'</span><span class="cr-val">$'+c.val.toLocaleString()+'</span><span class="cr-pct">'+Math.round(c.val/total*100)+'%</span></div>'
+      );
+    });
+  })();
+
+  // Margin over time chart (revenue vs cost)
+  (function(){
+    var months = ['Apr','May','Jun','Jul','Aug','Sep'];
+    var revenue = [11200,12800,14100,15600,16700,18420];
+    var cost = [7800,8600,9100,9800,10500,11400];
+    var max = 20000;
+    var chart = document.getElementById('margin-chart');
+    var labels = document.getElementById('margin-labels');
+    if (!chart) return;
+    for (var i=0;i<months.length;i++){
+      var col = document.createElement('div'); col.className='chart-col';
+      var rev = document.createElement('div'); rev.className='seg'; rev.style.background='var(--admin)'; rev.style.opacity='0.35'; rev.style.height=(revenue[i]/max*100)+'%';
+      var c = document.createElement('div'); c.className='seg'; c.style.background='var(--outbound)'; c.style.height=(cost[i]/max*100)+'%'; c.style.marginTop='2px';
+      col.appendChild(rev); col.appendChild(c); chart.appendChild(col);
+      var lab = document.createElement('span'); lab.textContent = months[i]; labels.appendChild(lab);
+    }
+  })();
+
+  // Vendors
+  var VENDORS = [
+    {name:"Retell AI", role:"Voice orchestration", status:"good", uptime:"99.98%", latency:"340ms"},
+    {name:"Twilio", role:"Telephony", status:"good", uptime:"99.99%", latency:"—"},
+    {name:"ElevenLabs", role:"Text-to-speech", status:"good", uptime:"99.95%", latency:"210ms"},
+    {name:"Deepgram", role:"Speech-to-text", status:"warn", uptime:"99.40%", latency:"810ms"}
+  ];
+  (function(){
+    var list = document.getElementById('vendor-list');
+    if (!list) return;
+    VENDORS.forEach(function(v){
+      var label = v.status === 'good' ? 'Operational' : v.status === 'warn' ? 'Degraded' : 'Down';
+      list.insertAdjacentHTML('beforeend',
+        '<div class="vendor-card"><span class="vendor-dot '+v.status+'"></span>'+
+        '<div><div class="vendor-name">'+v.name+'</div><div class="vendor-meta">'+v.role+' · '+label+'</div></div>'+
+        '<div class="vendor-stats"><div class="vs"><b>'+v.uptime+'</b><span>uptime</span></div><div class="vs"><b>'+v.latency+'</b><span>avg latency</span></div></div>'+
+        '</div>'
+      );
+    });
+  })();
+
+  // Volume chart
+  (function(){
+    var days = ['Sep 8','9','10','11','12','13','14','15','16','17','18','19','20','21'];
+    var vals = [4200,4600,4400,5100,4900,5600,5300,4800,5400,5900,5200,5000,6100,5800];
+    var max = 7000;
+    var chart = document.getElementById('volume-chart');
+    var labels = document.getElementById('volume-labels');
+    if (!chart) return;
+    for (var i=0;i<days.length;i++){
+      var col = document.createElement('div'); col.className='chart-col';
+      var seg = document.createElement('div'); seg.className='seg'; seg.style.background='var(--admin)'; seg.style.height=(vals[i]/max*100)+'%';
+      col.appendChild(seg); chart.appendChild(col);
+      var lab = document.createElement('span'); lab.textContent = (i%2===0)?days[i]:''; labels.appendChild(lab);
+    }
+  })();
+
+  // Compliance flags
+  var FLAGS = [
+    {account:"Lone Star Collections", issue:"3 calls placed outside allowed window", sev:"crit", raised:"2 days ago"},
+    {account:"QuickFix Plumbing", issue:"Missing consent record on 2 contacts", sev:"warn", raised:"5 days ago"}
+  ];
+  (function(){
+    var body = document.getElementById('flags-body');
+    if (!body) return;
+    FLAGS.forEach(function(f){
+      body.insertAdjacentHTML('beforeend',
+        '<tr><td class="cell-name">'+f.account+'</td><td>'+f.issue+'</td><td>'+statusPill(f.sev==='crit'?'crit':'warn')+'</td><td>'+f.raised+'</td></tr>'
+      );
+    });
+  })();
+
+  // Internal team + plans
+  var INTERNAL_TEAM = [
+    {name:"Manikandan", email:"mani@wavecall.io", role:"Owner"},
+    {name:"Co-founder", email:"cofounder@wavecall.io", role:"Admin"}
+  ];
+  (function(){
+    var list = document.getElementById('internal-team-list');
+    if (!list) return;
+    INTERNAL_TEAM.forEach(function(t){
+      list.insertAdjacentHTML('beforeend',
+        '<div class="team-row"><div><span class="tr-name">'+t.name+'</span><span class="tr-email">'+t.email+'</span></div><span class="tr-role">'+t.role+'</span></div>'
+      );
+    });
+  })();
+
+  /* ---------------- Active sessions ---------------- */
+  var SESSIONS = [
+    {who:"Manikandan", device:"Chrome on macOS", location:"Bengaluru, IN", active:"Active now"},
+    {who:"Co-founder", device:"Chrome on Windows", location:"Coimbatore, IN", active:"12 minutes ago"},
+    {who:"Manikandan", device:"Safari on iPhone", location:"Bengaluru, IN", active:"2 days ago"}
+  ];
+  (function(){
+    var body = document.getElementById('sessions-body');
+    if (!body) return;
+    SESSIONS.forEach(function(s, i){
+      body.insertAdjacentHTML('beforeend',
+        '<tr><td class="cell-name">'+s.who+'</td><td>'+s.device+'</td><td>'+s.location+'</td><td>'+s.active+'</td><td>'+(i===0 ? '<span class="pill neutral">This session</span>' : '<button class="btn" data-revoke="'+i+'">Revoke</button>')+'</td></tr>'
+      );
+    });
+    body.addEventListener('click', function(e){
+      var btn = e.target.closest('[data-revoke]');
+      if (!btn) return;
+      btn.closest('tr').remove();
+    });
+  })();
+  var PLANS = [
+    {name:"Starter", price:"$99/mo", detail:"1,000 included minutes · overage $0.12/min"},
+    {name:"Business", price:"$299/mo", detail:"4,000 included minutes · overage $0.10/min"},
+    {name:"Growth", price:"$499/mo", detail:"10,000 included minutes · overage $0.08/min"}
+  ];
+  (function(){
+    var list = document.getElementById('plans-list');
+    if (!list) return;
+    PLANS.forEach(function(p){
+      list.insertAdjacentHTML('beforeend',
+        '<div class="plan-row"><span class="plan-name">'+p.name+'</span><span class="plan-detail">'+p.detail+'</span><span class="plan-price">'+p.price+'</span></div>'
+      );
+    });
+  })();
+
+  // Nav
+  var titles = {overview:"Overview", accounts:"Accounts", pipeline:"Pipeline", revenue:"Revenue & margin", infra:"Infrastructure", incidents:"Incidents", compliance:"Compliance", auditlog:"Audit log", team:"Team & plans"};
+  document.querySelectorAll('.navitem').forEach(function(item){
+    item.addEventListener('click', function(){
+      document.querySelectorAll('.navitem').forEach(function(i){ i.classList.remove('active'); });
+      item.classList.add('active');
+      var page = item.getAttribute('data-nav');
+      document.querySelectorAll('.page').forEach(function(p){ p.classList.toggle('active', p.getAttribute('data-page') === page); });
+      document.getElementById('topbar-title').textContent = titles[page] || '';
+      if (page === 'auditlog' && window._renderPlatformAudit) window._renderPlatformAudit('');
+    });
+  });
+
+  // Theme toggle
+  (function(){
+    var root = document.documentElement;
+    function apply(mode){
+      if (mode === 'system'){ root.removeAttribute('data-theme'); } else { root.setAttribute('data-theme', mode); }
+      try { localStorage.setItem('wavecall-admin-theme', mode); } catch(e){}
+    }
+    var saved = 'system';
+    try { saved = localStorage.getItem('wavecall-admin-theme') || 'system'; } catch(e){}
+    apply(saved);
+    document.getElementById('theme-toggle').addEventListener('click', function(){
+      var current = root.getAttribute('data-theme') || 'system';
+      var isDark = current === 'dark' || (current !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      apply(isDark ? 'light' : 'dark');
+    });
+  })();
+
+  /* ---------------- Add client modal ---------------- */
+  (function(){
+    var overlay = document.getElementById('add-modal-overlay');
+    function open(){ overlay.classList.add('open'); }
+    function close(){ overlay.classList.remove('open'); }
+    document.getElementById('add-account-btn').addEventListener('click', open);
+    document.getElementById('add-modal-cancel').addEventListener('click', close);
+    overlay.addEventListener('click', function(e){ if (e.target === overlay) close(); });
+    document.getElementById('add-modal-create').addEventListener('click', function(){
+      var name = document.getElementById('new-name').value.trim();
+      if (!name){ document.getElementById('new-name').focus(); return; }
+      var vertical = document.getElementById('new-vertical').value.trim() || "—";
+      var plan = document.getElementById('new-plan').value;
+      var capByPlan = {Starter:1000, Business:4000, Growth:10000};
+      var priceByPlan = {Starter:99, Business:299, Growth:499};
+      var acc = {
+        name:name, vertical:vertical, plan:plan, price:priceByPlan[plan], used:0, cap:capByPlan[plan], status:"warn", callStatus:"testing",
+        greeting:"Hi, this is the Wavecall Assistant calling on behalf of "+name+". How can I help you today?",
+        voice:"Warm & friendly (female)", lang:"English (US)", phone:"", provisioned:false,
+        health:60, healthNote:"Too new to score — not yet taking live calls.", payment:"good",
+        kb:[], qa:[], history:[{title:"Account created", meta:"Just now · Manikandan"}], notes:[], activity:[{text:"Account created", time:"Just now"}], invoices:[]
+      };
+      ACCOUNTS.push(acc);
+      document.getElementById('new-name').value = '';
+      document.getElementById('new-vertical').value = '';
+      document.getElementById('new-email').value = '';
+      close();
+      renderAccounts();
+      openAccountWorkspace(acc);
+    });
+  })();
+
+  /* ---------------- Account workspace ---------------- */
+  var DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+  function openAccountWorkspace(a){
+    document.querySelectorAll('.page').forEach(function(p){ p.classList.toggle('active', p.getAttribute('data-page') === 'account-detail'); });
+    document.querySelectorAll('.navitem').forEach(function(i){ i.classList.remove('active'); });
+    document.getElementById('topbar-title').textContent = a.name;
+    closeDrawer();
+
+    document.getElementById('wk-name').textContent = a.name;
+    document.getElementById('wk-sub').textContent = a.vertical + ' · ' + a.plan + ' plan';
+    document.getElementById('wk-status').innerHTML = statusPill(a.status);
+
+    document.getElementById('wk-agent-name').value = "Wavecall Assistant";
+    document.getElementById('wk-greeting').value = a.greeting;
+    document.getElementById('wk-phone').value = a.phone;
+    document.getElementById('wk-provision-status').className = 'pill ' + (a.provisioned ? 'good' : 'neutral');
+    document.getElementById('wk-provision-status').innerHTML = '<span class="dot"></span>' + (a.provisioned ? 'Provisioned' : 'Not provisioned');
+    document.getElementById('wk-provision-btn').textContent = a.provisioned ? 'Re-provision' : 'Provision';
+    renderCallStatus(a);
+
+    var hoursGrid = document.getElementById('wk-hours');
+    hoursGrid.innerHTML = "";
+    DAYS.forEach(function(day, i){
+      var isWeekend = i >= 5;
+      hoursGrid.insertAdjacentHTML('beforeend',
+        '<div class="day-name">'+day+'</div><div class="day-time">'+
+        '<label class="switch"><input type="checkbox"'+(isWeekend?'':' checked')+'><span class="track"></span></label>'+
+        (isWeekend ? 'Closed' : '<select><option>9:00 AM</option></select> to <select><option>5:00 PM</option></select>')+
+        '</div>'
+      );
+    });
+
+    var kbList = document.getElementById('wk-kb-list');
+    kbList.innerHTML = a.kb.length ? "" : '<p style="color:var(--ink-faint); font-size:13px;">No documents uploaded yet.</p>';
+    a.kb.forEach(function(doc){
+      kbList.insertAdjacentHTML('beforeend',
+        '<div class="kb-row"><div class="kb-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l5 5v13H6z"/><path d="M14 3v5h5"/></svg></div>'+
+        '<div><div class="kb-name">'+doc.name+'</div><div class="kb-meta">'+doc.meta+'</div></div><button class="btn">Remove</button></div>'
+      );
+    });
+
+    document.getElementById('wk-plan').value = a.plan;
+    var pct = Math.round(a.used/a.cap*100);
+    var color = pct>=95?'var(--danger)':pct>=80?'var(--warning)':'var(--admin)';
+    var fill = document.getElementById('wk-usage-fill');
+    fill.style.width = Math.min(pct,100)+'%'; fill.style.background = color;
+    document.getElementById('wk-usage-text').textContent = a.used.toLocaleString()+' of '+a.cap.toLocaleString()+' included minutes used ('+pct+'%)';
+
+    var healthColor = a.health>=75?'var(--success)':a.health>=50?'var(--warning)':'var(--danger)';
+    var hEl = document.getElementById('wk-health-score');
+    hEl.textContent = a.health + ' / 100'; hEl.style.color = healthColor;
+    document.getElementById('wk-health-sub').textContent = a.healthNote;
+    var payMap = {good:["Current","up"], failed:["Payment failed","down"], retrying:["Retrying payment","down"], cancelled:["No active billing",""]};
+    var pay = payMap[a.payment] || payMap.good;
+    document.getElementById('wk-payment-status').textContent = pay[0];
+    document.getElementById('wk-payment-status').style.color = a.payment==='good' ? '' : 'var(--danger)';
+    document.getElementById('wk-payment-sub').textContent = a.payment==='failed' ? 'Card declined — retry or contact client' : a.payment==='retrying' ? 'Next automatic retry in 2 days' : a.payment==='cancelled' ? '' : 'On file, auto-charges monthly';
+
+    var invBody = document.getElementById('wk-invoices');
+    invBody.innerHTML = a.invoices.length ? "" : '<tr><td colspan="3" style="color:var(--ink-faint);">No invoices yet.</td></tr>';
+    a.invoices.forEach(function(inv){
+      var st = inv.status;
+      var pillClass = st==='Paid' ? 'good' : (st==='Failed' ? 'crit' : 'warn');
+      invBody.insertAdjacentHTML('beforeend', '<tr><td>'+inv.period+'</td><td class="num">'+inv.amount+'</td><td><span class="pill '+pillClass+'"><span class="dot"></span>'+st+'</span></td></tr>');
+    });
+
+    var qaBody = document.getElementById('wk-qa-body');
+    qaBody.innerHTML = a.qa.length ? "" : '<tr><td colspan="4" style="color:var(--ink-faint);">No flagged calls — nothing needs review.</td></tr>';
+    a.qa.forEach(function(q){
+      qaBody.insertAdjacentHTML('beforeend', '<tr><td>'+q.call+'</td><td>'+q.reason+'</td><td class="num">'+q.score+'</td><td>'+(q.reviewed ? '<span class="pill good"><span class="dot"></span>Reviewed</span>' : '<span class="pill warn"><span class="dot"></span>Needs review</span>')+'</td></tr>');
+    });
+
+    var histList = document.getElementById('wk-history-list');
+    histList.innerHTML = a.history.length ? "" : '<p style="color:var(--ink-faint); font-size:13px;">No saved versions yet.</p>';
+    a.history.forEach(function(v, i){
+      histList.insertAdjacentHTML('beforeend',
+        '<div class="version-row"><span class="version-dot"></span><div class="v-main"><div class="v-title">'+v.title+'</div><div class="v-meta">'+v.meta+'</div></div>'+
+        (i===0 ? '<span class="pill neutral">Current</span>' : '<button class="btn">Restore</button>')+'</div>'
+      );
+    });
+
+    document.getElementById('wk-api-key').textContent = maskedKey(a);
+    document.getElementById('wk-webhook-secret').textContent = 'whsec_•••• •••• •••• ••••';
+
+    renderNotes(a);
+    var actList = document.getElementById('wk-activity-list');
+    actList.innerHTML = a.activity.length ? "" : '<p style="color:var(--ink-faint); font-size:13px;">No activity recorded yet.</p>';
+    a.activity.slice().reverse().forEach(function(act){
+      actList.insertAdjacentHTML('beforeend', '<div class="activity-row"><span class="activity-dot"></span><span class="a-text">'+act.text+'</span><span class="a-time">'+act.time+'</span></div>');
+    });
+
+    var compSub = document.getElementById('wk-compliance-sub');
+    var compList = document.getElementById('wk-compliance-list');
+    var flags = (typeof FLAGS !== 'undefined') ? FLAGS.filter(function(f){ return f.account === a.name; }) : [];
+    if (flags.length === 0){
+      compSub.textContent = "No open compliance flags for this account.";
+      compList.innerHTML = '<div class="alert info"><div class="alert-bar"></div><div class="alert-text"><span class="t">All clear</span><span class="d">Consent and calling-window rules are being followed.</span></div></div>';
+    } else {
+      compSub.textContent = flags.length + " open flag" + (flags.length>1?'s':'') + " for this account.";
+      compList.innerHTML = "";
+      flags.forEach(function(f){
+        compList.insertAdjacentHTML('beforeend', '<div class="alert '+(f.sev==='crit'?'crit':'warn')+'"><div class="alert-bar"></div><div class="alert-text"><span class="t">'+f.issue+'</span><span class="d">Raised '+f.raised+'</span></div></div>');
+      });
+    }
+
+    // Reset test transcript to this account's greeting
+    document.getElementById('wk-test-transcript').innerHTML = '<div class="bubble agent"><span class="who">Agent</span>'+a.greeting+'</div>';
+
+    // Reset to first subtab
+    document.querySelectorAll('.subtab').forEach(function(t,i){ t.classList.toggle('active', i===0); });
+    document.querySelectorAll('.subpanel').forEach(function(p){ p.classList.toggle('active', p.getAttribute('data-subpanel')==='setup'); });
+
+    window._currentWorkspaceAccount = a;
+  }
+  function renderNotes(a){
+    var list = document.getElementById('wk-notes-list');
+    list.innerHTML = a.notes.length ? "" : '<p style="color:var(--ink-faint); font-size:13px;">No notes yet.</p>';
+    a.notes.slice().reverse().forEach(function(n){
+      list.insertAdjacentHTML('beforeend', '<div class="note-row"><div class="n-meta">'+n.meta+'</div>'+n.text+'</div>');
+    });
+  }
+
+  document.getElementById('drawer-manage-btn').addEventListener('click', function(){
+    if (currentDrawerAccount) openAccountWorkspace(currentDrawerAccount);
+  });
+  document.getElementById('back-to-accounts').addEventListener('click', function(){
+    document.querySelector('.navitem[data-nav="accounts"]').click();
+  });
+
+  document.querySelectorAll('.subtab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      document.querySelectorAll('.subtab').forEach(function(t){ t.classList.remove('active'); });
+      tab.classList.add('active');
+      var key = tab.getAttribute('data-subtab');
+      document.querySelectorAll('.subpanel').forEach(function(p){ p.classList.toggle('active', p.getAttribute('data-subpanel') === key); });
+    });
+  });
+
+  document.getElementById('wk-provision-btn').addEventListener('click', function(){
+    var a = window._currentWorkspaceAccount;
+    if (!a) return;
+    var val = document.getElementById('wk-phone').value.trim();
+    if (!val){ document.getElementById('wk-phone').focus(); return; }
+    a.phone = val; a.provisioned = true;
+    a.activity.push({text:"Phone number provisioned", time:"Just now"});
+    document.getElementById('wk-provision-status').className = 'pill good';
+    document.getElementById('wk-provision-status').innerHTML = '<span class="dot"></span>Provisioned';
+    document.getElementById('wk-provision-btn').textContent = 'Re-provision';
+  });
+
+  document.getElementById('wk-note-add').addEventListener('click', function(){
+    var a = window._currentWorkspaceAccount;
+    var input = document.getElementById('wk-note-input');
+    var val = input.value.trim();
+    if (!a || !val) return;
+    a.notes.push({text:val, meta:"Just now · Manikandan"});
+    a.activity.push({text:"Note added", time:"Just now"});
+    input.value = '';
+    renderNotes(a);
+  });
+
+  (function(){
+    var t = document.getElementById('wk-test-transcript');
+    var input = document.getElementById('wk-test-input');
+    var responses = [
+      "Sure — let me check what's available for you.",
+      "Got it, I've made a note of that.",
+      "I can help with that. Could you confirm your name and number first?",
+      "That's outside what I can answer directly, so I'll have someone call you back shortly.",
+      "You're all set — anything else I can help with?"
+    ];
+    function send(){
+      var val = input.value.trim();
+      if (!val) return;
+      t.insertAdjacentHTML('beforeend', '<div class="bubble caller"><span class="who">Caller</span>'+val+'</div>');
+      input.value = '';
+      var reply = responses[Math.floor(Math.random()*responses.length)];
+      setTimeout(function(){
+        t.insertAdjacentHTML('beforeend', '<div class="bubble agent"><span class="who">Agent</span>'+reply+'</div>');
+        t.scrollTop = t.scrollHeight;
+      }, 450);
+    }
+    document.getElementById('wk-test-send').addEventListener('click', send);
+    input.addEventListener('keydown', function(e){ if (e.key === 'Enter') send(); });
+  })();
+
+  /* ---------------- API key & webhook secret: shown once, masked forever after ---------------- */
+  function maskedKey(a){ return 'wv_live_•••• •••• •••• ' + a.name.replace(/[^A-Za-z]/g,'').slice(0,4).toLowerCase(); }
+  document.getElementById('wk-regen-key').addEventListener('click', function(){
+    var a = window._currentWorkspaceAccount;
+    if (!a) return;
+    var fresh = 'wv_live_' + Math.random().toString(36).slice(2,10) + a.name.replace(/[^A-Za-z]/g,'').slice(0,4).toLowerCase();
+    alert('New API key (copy it now — it will not be shown again):\n\n' + fresh);
+    document.getElementById('wk-api-key').textContent = maskedKey(a);
+    a.activity.push({text:"API key regenerated", time:"Just now"});
+    PLATFORM_AUDIT.unshift({time:"Just now", actor:"Manikandan", action:"Regenerated API key", account:a.name});
+  });
+  document.getElementById('wk-regen-secret').addEventListener('click', function(){
+    var a = window._currentWorkspaceAccount;
+    if (!a) return;
+    var fresh = 'whsec_' + Math.random().toString(36).slice(2,12);
+    alert('New webhook signing secret (copy it now — it will not be shown again):\n\n' + fresh);
+    document.getElementById('wk-webhook-secret').textContent = 'whsec_•••• •••• •••• ••••';
+    a.activity.push({text:"Webhook signing secret regenerated", time:"Just now"});
+    PLATFORM_AUDIT.unshift({time:"Just now", actor:"Manikandan", action:"Regenerated webhook secret", account:a.name});
+  });
+
+  /* ---------------- Call status: testing / live / suspended ---------------- */
+  function renderCallStatus(a){
+    var map = {
+      testing: ["Testing", "warn", "Not visible to real customers yet — safe to configure and test freely."],
+      live: ["Live", "good", "Taking real calls right now."],
+      suspended: ["Suspended", "crit", "Calling is paused for this account. Provisioning and config stay intact."]
+    };
+    var m = map[a.callStatus] || map.testing;
+    document.getElementById('wk-call-status-pill').innerHTML = '<span class="pill '+m[1]+'"><span class="dot"></span>'+m[0]+'</span>';
+    document.getElementById('wk-call-status-hint').textContent = m[2];
+    var goLiveBtn = document.getElementById('wk-golive-btn');
+    var suspendBtn = document.getElementById('wk-suspend-btn');
+    goLiveBtn.style.display = a.callStatus === 'testing' ? 'inline-block' : 'none';
+    goLiveBtn.disabled = !a.provisioned;
+    suspendBtn.textContent = a.callStatus === 'suspended' ? 'Resume account' : 'Suspend account';
+  }
+  document.getElementById('wk-golive-btn').addEventListener('click', function(){
+    var a = window._currentWorkspaceAccount;
+    if (!a || !a.provisioned) return;
+    a.callStatus = 'live';
+    a.activity.push({text:"Account went live", time:"Just now"});
+    PLATFORM_AUDIT.unshift({time:"Just now", actor:"Manikandan", action:"Account went live", account:a.name});
+    renderCallStatus(a);
+  });
+  document.getElementById('wk-suspend-btn').addEventListener('click', function(){
+    var a = window._currentWorkspaceAccount;
+    if (!a) return;
+    a.callStatus = a.callStatus === 'suspended' ? 'live' : 'suspended';
+    a.activity.push({text: a.callStatus === 'suspended' ? "Account suspended" : "Account resumed", time:"Just now"});
+    PLATFORM_AUDIT.unshift({time:"Just now", actor:"Manikandan", action: a.callStatus === 'suspended' ? "Suspended account" : "Resumed account", account:a.name});
+    renderCallStatus(a);
+  });
+
+  /* ---------------- Log impersonation on "Open as this account" ---------------- */
+  document.querySelector('.drawer .btn:not(.primary)').addEventListener('click', function(){
+    if (!currentDrawerAccount) return;
+    currentDrawerAccount.activity.push({text:"Admin viewed this account's dashboard (impersonation)", time:"Just now"});
+    PLATFORM_AUDIT.unshift({time:"Just now", actor:"Manikandan", action:"Viewed as client (impersonation)", account:currentDrawerAccount.name});
+    alert('Opening ' + currentDrawerAccount.name + '\u2019s dashboard as them. This action is logged in the audit log.');
+  });
+
+  /* ---------------- Pipeline ---------------- */
+  var PIPELINE = [
+    {name:"Meadowbrook Orthodontics", stage:"trial", source:"Inbound demo request", days:3},
+    {name:"Apex Roofing & Restoration", stage:"demo", source:"Cold outreach", days:1},
+    {name:"Silverline Insurance Agents", stage:"negotiating", source:"Referral — BrightSmile", days:8},
+    {name:"Union Square Med Spa", stage:"trial", source:"Content / SEO", days:6},
+    {name:"Whitmore & Cole Law", stage:"demo", source:"LinkedIn outreach", days:2},
+    {name:"Pinecrest Veterinary Group", stage:"won", source:"Referral — Northbridge", days:14},
+    {name:"Castellan Debt Solutions", stage:"lost", source:"Cold outreach", days:21}
+  ];
+  (function(){
+    var body = document.getElementById('pipeline-body');
+    if (!body) return;
+    var labels = {trial:"Trial", demo:"Demo scheduled", negotiating:"Negotiating", won:"Won", lost:"Lost"};
+    PIPELINE.forEach(function(p){
+      var action = p.stage === 'won' ? '<span style="color:var(--ink-faint); font-size:12.5px;">Converted</span>' :
+                   p.stage === 'lost' ? '<span style="color:var(--ink-faint); font-size:12.5px;">Closed</span>' :
+                   '<button class="btn" data-convert="'+p.name+'">Convert to account</button>';
+      body.insertAdjacentHTML('beforeend',
+        '<tr><td class="cell-name">'+p.name+'</td><td><span class="stage-badge '+p.stage+'">'+labels[p.stage]+'</span></td><td>'+p.source+'</td><td class="num">'+p.days+' days</td><td>'+action+'</td></tr>'
+      );
+    });
+    body.addEventListener('click', function(e){
+      var btn = e.target.closest('[data-convert]');
+      if (btn) alert('This would open the Add-client form pre-filled with ' + btn.getAttribute('data-convert') + ' trial details, so nothing needs to be re-entered.');
+    });
+  })();
+
+  /* ---------------- Incidents ---------------- */
+  var INCIDENTS = [
+    {title:"Deepgram elevated latency", status:"investigating", component:"Speech-to-text (Deepgram)", started:"12 minutes ago",
+      updates:[{time:"12 min ago", text:"Response times up to ~800ms, roughly 2.5x normal. Investigating with Deepgram support."}]},
+    {title:"Retell brief API errors", status:"resolved", component:"Voice orchestration (Retell)", started:"Sep 19, 2026",
+      updates:[{time:"Sep 19, 4:52 PM", text:"Elevated 500 errors on call-start requests, ~6% of attempts."},{time:"Sep 19, 5:10 PM", text:"Retell rolled back a deploy — error rate back to normal."},{time:"Sep 19, 5:15 PM", text:"Resolved. No accounts required manual follow-up."}]},
+    {title:"Twilio number provisioning delay", status:"monitoring", component:"Telephony (Twilio)", started:"Sep 15, 2026",
+      updates:[{time:"Sep 15, 2026", text:"New number provisioning taking 10-15 min instead of instant. Twilio confirms a known regional delay."},{time:"Sep 16, 2026", text:"Delay reduced to ~2 min. Keeping an eye on it before fully closing."}]}
+  ];
+  (function(){
+    var list = document.getElementById('incidents-list');
+    if (!list) return;
+    var statusMap = {investigating:["Investigating","crit"], monitoring:["Monitoring","warn"], resolved:["Resolved","good"]};
+    INCIDENTS.forEach(function(inc){
+      var s = statusMap[inc.status];
+      var updatesHtml = inc.updates.map(function(u){ return '<div class="incident-update"><span class="iu-time">'+u.time+'</span><span>'+u.text+'</span></div>'; }).join('');
+      list.insertAdjacentHTML('beforeend',
+        '<div class="incident-card"><div class="incident-top"><div><div class="incident-title">'+inc.title+'</div><div class="incident-meta">'+inc.component+' · started '+inc.started+'</div></div><span class="pill '+s[1]+'"><span class="dot"></span>'+s[0]+'</span></div>'+
+        '<div class="incident-updates">'+updatesHtml+'</div></div>'
+      );
+    });
+    document.getElementById('new-incident-btn').addEventListener('click', function(){
+      alert('This would open a form to log a new incident, post the first update, and optionally publish it to a public status page your clients can check during an outage.');
+    });
+  })();
+
+  /* ---------------- Platform-wide audit log ---------------- */
+  var PLATFORM_AUDIT = [
+    {time:"Today, 10:42 AM", actor:"Manikandan", action:"Regenerated API key", account:"Lone Star Collections"},
+    {time:"Today, 9:15 AM", actor:"Co-founder", action:"Enabled calling-window override", account:"Lone Star Collections"},
+    {time:"Yesterday, 4:20 PM", actor:"Manikandan", action:"Knowledge base document added", account:"Meridian Legal Partners"},
+    {time:"Sep 21, 2026", actor:"Manikandan", action:"Plan changed to Business", account:"Harbor Dental Group"},
+    {time:"Sep 20, 2026", actor:"Co-founder", action:"Flagged call for QA review", account:"QuickFix Plumbing"},
+    {time:"Sep 19, 2026", actor:"Manikandan", action:"Compliance flag raised", account:"Lone Star Collections"},
+    {time:"Sep 18, 2026", actor:"Manikandan", action:"Compliance flag raised", account:"QuickFix Plumbing"},
+    {time:"Sep 16, 2026", actor:"Co-founder", action:"Knowledge base document added", account:"Meridian Legal Partners"},
+    {time:"Sep 14, 2026", actor:"Manikandan", action:"Internal note added", account:"Coastal Realty Group"},
+    {time:"Sep 10, 2026", actor:"Manikandan", action:"Greeting updated", account:"Harbor Dental Group"},
+    {time:"Sep 8, 2026", actor:"Manikandan", action:"Account cancelled", account:"Sunrise Auto Group"},
+    {time:"Sep 5, 2026", actor:"Manikandan", action:"Plan changed to Growth", account:"Coastal Realty Group"}
+  ];
+  (function(){
+    var body = document.getElementById('platform-audit-body');
+    if (!body) return;
+    function render(q){
+      body.innerHTML = "";
+      var rows = PLATFORM_AUDIT.filter(function(r){ return !q || r.actor.toLowerCase().indexOf(q)!==-1 || r.account.toLowerCase().indexOf(q)!==-1; });
+      if (rows.length === 0){ body.innerHTML = '<tr><td colspan="4" style="color:var(--ink-faint); padding:20px 0;">No matching entries.</td></tr>'; return; }
+      rows.forEach(function(r){
+        body.insertAdjacentHTML('beforeend', '<tr><td>'+r.time+'</td><td class="cell-name">'+r.actor+'</td><td>'+r.action+'</td><td>'+r.account+'</td></tr>');
+      });
+    }
+    render('');
+    document.getElementById('audit-search').addEventListener('input', function(e){ render(e.target.value.trim().toLowerCase()); });
+    window._renderPlatformAudit = render;
+  })();
+
+  /* ---------------- Data deletion requests ---------------- */
+  var DELETIONS = [
+    {account:"Sunrise Auto Group", requestedBy:"Client (email)", date:"Sep 9, 2026", scope:"Contact records, recordings & transcripts. Anonymized call-volume stats retained 90 days.", status:"completed"},
+    {account:"QuickFix Plumbing", requestedBy:"Contact opt-out", date:"Sep 18, 2026", scope:"Single contact's record, recordings & transcripts only — account data unaffected.", status:"pending"}
+  ];
+  (function(){
+    var body = document.getElementById('deletion-body');
+    if (!body) return;
+    DELETIONS.forEach(function(d){
+      body.insertAdjacentHTML('beforeend', '<tr><td class="cell-name">'+d.account+'</td><td>'+d.requestedBy+'</td><td>'+d.date+'</td><td style="max-width:220px; white-space:normal; font-size:12.5px; color:var(--ink-muted);">'+d.scope+'</td><td>'+(d.status==='completed' ? '<span class="pill good"><span class="dot"></span>Completed</span>' : '<span class="pill warn"><span class="dot"></span>Pending</span>')+'</td></tr>');
+    });
+  })();
+</script>
+</body>
+</html>
